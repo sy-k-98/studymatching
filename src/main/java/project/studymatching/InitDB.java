@@ -8,16 +8,20 @@ import org.springframework.context.event.EventListener;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import project.studymatching.entity.category.Category;
 import project.studymatching.entity.member.Member;
 import project.studymatching.entity.member.Role;
 import project.studymatching.entity.member.RoleType;
+import project.studymatching.entity.post.Post;
 import project.studymatching.exception.RoleNotFoundException;
+import project.studymatching.repository.category.CategoryRepository;
 import project.studymatching.repository.member.MemberRepository;
+import project.studymatching.repository.post.PostRepository;
 import project.studymatching.repository.role.RoleRepository;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Component
 @RequiredArgsConstructor
@@ -27,15 +31,22 @@ public class InitDB {
     private final RoleRepository roleRepository;
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CategoryRepository categoryRepository;
+    private final PostRepository postRepository;
 
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void initDB() {
+
         log.info("initialize database");
 
         initRole();
         initTestAdmin();
         initTestMember();
+        initCategory();
+        initPost();
+
+        log.info("initialize database");
     }
 
     private void initRole() {
@@ -62,4 +73,24 @@ public class InitDB {
         );
     }
 
+    private void initCategory() {
+        Category c1 = categoryRepository.save(new Category("category1", null));
+        Category c2 = categoryRepository.save(new Category("category2", c1));
+        Category c3 = categoryRepository.save(new Category("category3", c1));
+        Category c4 = categoryRepository.save(new Category("category4", c2));
+        Category c5 = categoryRepository.save(new Category("category5", c2));
+        Category c6 = categoryRepository.save(new Category("category6", c4));
+        Category c7 = categoryRepository.save(new Category("category7", c3));
+        Category c8 = categoryRepository.save(new Category("category8", null));
+
+    }
+
+    private void initPost() {
+        Member member = memberRepository.findAll().get(0);
+        Category category = categoryRepository.findAll().get(0);
+        IntStream.range(0, 100)
+                .forEach(i -> postRepository.save(
+                        new Post("title" + i, "content" + i, member, category, List.of())
+                ));
+    }
 }

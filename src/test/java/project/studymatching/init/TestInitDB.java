@@ -4,10 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import project.studymatching.entity.category.Category;
 import project.studymatching.entity.member.Member;
 import project.studymatching.entity.member.Role;
 import project.studymatching.entity.member.RoleType;
 import project.studymatching.exception.RoleNotFoundException;
+import project.studymatching.repository.category.CategoryRepository;
 import project.studymatching.repository.member.MemberRepository;
 import project.studymatching.repository.role.RoleRepository;
 
@@ -23,6 +25,9 @@ public class TestInitDB {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    CategoryRepository categoryRepository;
+
     private String adminEmail = "admin@admin.com";
     private String member1Email = "member1@member.com";
     private String member2Email = "member2@member.com";
@@ -33,6 +38,7 @@ public class TestInitDB {
         initRole();
         initTestAdmin();
         initTestMember();
+        initCategory();
     }
 
     private void initRole() {
@@ -57,6 +63,12 @@ public class TestInitDB {
                         new Member(member2Email, passwordEncoder.encode(password), "member2", "member2",
                                 List.of(roleRepository.findByRoleType(RoleType.ROLE_NORMAL).orElseThrow(RoleNotFoundException::new))))
         );
+    }
+
+    private void initCategory() {
+        Category category1 = new Category("category1", null);
+        Category category2 = new Category("category2", category1);
+        categoryRepository.saveAll(List.of(category1, category2));
     }
 
     public String getAdminEmail() {
