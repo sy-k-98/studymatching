@@ -39,7 +39,7 @@ import static project.studymatching.factory.dto.SignInRequestFactory.createSignI
 import static project.studymatching.factory.dto.PostCreateRequestFactory.createPostCreateRequest;
 import static project.studymatching.factory.entity.PostFactory.createPost;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles(value = "test")
 @Transactional

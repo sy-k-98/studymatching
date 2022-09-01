@@ -4,17 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
+import project.studymatching.entity.comment.Comment;
 import project.studymatching.entity.member.RoleType;
-import project.studymatching.entity.post.Post;
-
-import project.studymatching.repository.post.PostRepository;
+import project.studymatching.repository.comment.CommentRepository;
 
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class PostGuard extends Guard {
-    private final PostRepository postRepository;
+public class CommentGuard extends Guard {
+    private final CommentRepository commentRepository;
     private List<RoleType> roleTypes = List.of(RoleType.ROLE_ADMIN);
 
     @Override
@@ -24,8 +23,8 @@ public class PostGuard extends Guard {
 
     @Override
     protected boolean isResourceOwner(Long id) {
-        Post post = postRepository.findById(id).orElseThrow(() -> { throw new AccessDeniedException(""); });
+        Comment comment = commentRepository.findById(id).orElseThrow(() -> { throw new AccessDeniedException(""); });
         Long memberId = AuthHelper.extractMemberId();
-        return post.getMember().getId().equals(memberId);
+        return comment.getMember().getId().equals(memberId);
     }
 }

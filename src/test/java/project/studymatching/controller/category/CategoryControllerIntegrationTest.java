@@ -30,7 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static project.studymatching.factory.dto.CategoryCreateRequestFactory.createCategoryCreateRequest;
 import static project.studymatching.factory.dto.SignInRequestFactory.createSignInRequest;
 
-@SpringBootTest
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @ActiveProfiles(value = "test")
 @Transactional
