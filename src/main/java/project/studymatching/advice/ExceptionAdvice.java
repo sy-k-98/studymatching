@@ -1,5 +1,6 @@
 package project.studymatching.advice;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
@@ -10,96 +11,128 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import project.studymatching.dto.response.Response;
 import project.studymatching.exception.*;
+import project.studymatching.exception.type.ExceptionType;
+import project.studymatching.handler.ResponseHandler;
+
+import static project.studymatching.exception.type.ExceptionType.*;
 
 @RestControllerAdvice
+@RequiredArgsConstructor
 @Slf4j
 public class ExceptionAdvice {
+    private final ResponseHandler responseHandler;
 
     @ExceptionHandler(Exception.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public Response exception(Exception e) {
-        log.info("e = {}", e.getMessage());
-        return Response.failure(-1000, "오류가 발생하였습니다.");
-    }
-
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Response methodArgumentNotValidException(MethodArgumentNotValidException e) {
-        return Response.failure(-1003, e.getBindingResult().getFieldError().getDefaultMessage());
-    }
-
-    @ExceptionHandler(LoginFailureException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Response loginFailureException() {
-        return Response.failure(-1004, "로그인에 실패하였습니다.");
-    }
-
-    @ExceptionHandler(MemberEmailAlreadyExistsException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Response memberEmailAlreadyExistsException(MemberEmailAlreadyExistsException e) {
-        return Response.failure(-1005, e.getMessage() + "은 중복된 이메일 입니다.");
-    }
-
-    @ExceptionHandler(MemberNicknameAlreadyExistsException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public Response memberNicknameAlreadyExistsException(MemberNicknameAlreadyExistsException e) {
-        return Response.failure(-1006, e.getMessage() + "은 중복된 닉네임 입니다.");
-    }
-
-    @ExceptionHandler(MemberNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Response memberNotFoundException() {
-        return Response.failure(-1007, "요청한 회원을 찾을 수 없습니다.");
-    }
-
-    @ExceptionHandler(RoleNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Response roleNotFoundException() {
-        return Response.failure(-1008, "요청한 권한 등급을 찾을 수 없습니다.");
-    }
-
-    @ExceptionHandler(AuthenticationEntryPointException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public Response authenticationEntryPoint() {
-        return Response.failure(-1001, "인증되지 않은 사용자입니다.");
+        log.error("e = {}", e.getMessage());
+        return getFailureResponse(EXCEPTION);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public Response accessDeniedException() {
-        return Response.failure(-1002, "접근이 거부되었습니다.");
-    }
-
-    @ExceptionHandler(MissingRequestHeaderException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Response missingRequestHeaderException(MissingRequestHeaderException e) {
-        return Response.failure(-1009, e.getHeaderName() + " 요청 헤더가 누락되었습니다.");
-    }
-
-    @ExceptionHandler(CategoryNotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public Response categoryNotFoundException() {
-        return Response.failure(-1010, "존재하지 않는 카테고리입니다.");
-    }
-
-    @ExceptionHandler(CannotConvertNestedStructureException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public Response cannotConvertNestedStructureException(CannotConvertNestedStructureException e) {
-        log.info("e = {}", e.getMessage());
-        return Response.failure(-1011, "중첩 구조 변환에 실패하였습니다.");
+        return getFailureResponse(ACCESS_DENIED_EXCEPTION);
     }
 
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Response bindException(BindException e) {
-        return Response.failure(-1003, e.getBindingResult().getFieldError().getDefaultMessage());
+        return getFailureResponse(BIND_EXCEPTION, e.getBindingResult().getFieldError().getDefaultMessage());
+    }
+
+    @ExceptionHandler(LoginFailureException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public Response loginFailureException() {
+        return getFailureResponse(LOGIN_FAILURE_EXCEPTION);
+    }
+
+    @ExceptionHandler(MemberEmailAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Response memberEmailAlreadyExistsException(MemberEmailAlreadyExistsException e) {
+        return getFailureResponse(MEMBER_EMAIL_ALREADY_EXISTS_EXCEPTION, e.getMessage());
+    }
+
+    @ExceptionHandler(MemberNicknameAlreadyExistsException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public Response memberNicknameAlreadyExistsException(MemberNicknameAlreadyExistsException e) {
+        return getFailureResponse(MEMBER_NICKNAME_ALREADY_EXISTS_EXCEPTION, e.getMessage());
+    }
+
+    @ExceptionHandler(MemberNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response memberNotFoundException() {
+        return getFailureResponse(MEMBER_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(RoleNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response roleNotFoundException() {
+        return getFailureResponse(ROLE_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response missingRequestHeaderException(MissingRequestHeaderException e) {
+        return getFailureResponse(MISSING_REQUEST_HEADER_EXCEPTION, e.getHeaderName());
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response categoryNotFoundException() {
+        return getFailureResponse(CATEGORY_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(CannotConvertNestedStructureException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public Response cannotConvertNestedStructureException(CannotConvertNestedStructureException e) {
+        log.error("e = {}", e.getMessage());
+        return getFailureResponse(CANNOT_CONVERT_NESTED_STRUCTURE_EXCEPTION);
+    }
+
+    @ExceptionHandler(PostNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response postNotFoundException() {
+        return getFailureResponse(POST_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(UnsupportedImageFormatException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response unsupportedImageFormatException() {
+        return getFailureResponse(UNSUPPORTED_IMAGE_FORMAT_EXCEPTION);
     }
 
     @ExceptionHandler(FileUploadFailureException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public Response fileUploadFailureException(FileUploadFailureException e) {
-        log.info("e = {}", e.getMessage());
-        return Response.failure(-1014, "파일 업로드에 실패하였습니다.");
+        log.error("e = {}", e.getMessage());
+        return getFailureResponse(FILE_UPLOAD_FAILURE_EXCEPTION);
+    }
+
+    @ExceptionHandler(CommentNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response commentNotFoundException() {
+        return getFailureResponse(COMMENT_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(MessageNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public Response messageNotFoundException() {
+        return getFailureResponse(MESSAGE_NOT_FOUND_EXCEPTION);
+    }
+
+    @ExceptionHandler(RefreshTokenFailureException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Response refreshTokenFailureException() {
+        return getFailureResponse(REFRESH_TOKEN_FAILURE_EXCEPTION);
+    }
+
+    private Response getFailureResponse(ExceptionType exceptionType) {
+        return responseHandler.getFailureResponse(exceptionType);
+    }
+
+    private Response getFailureResponse(ExceptionType exceptionType, Object... args) {
+        return responseHandler.getFailureResponse(exceptionType, args);
     }
 
 }

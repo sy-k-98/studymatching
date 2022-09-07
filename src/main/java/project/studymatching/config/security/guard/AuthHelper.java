@@ -1,9 +1,9 @@
 package project.studymatching.config.security.guard;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
 import project.studymatching.config.security.CustomAuthenticationToken;
 import project.studymatching.config.security.CustomUserDetails;
 import project.studymatching.entity.member.RoleType;
@@ -11,8 +11,7 @@ import project.studymatching.entity.member.RoleType;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-@Component
-@Slf4j
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class AuthHelper {
 
     public static boolean isAuthenticated() {

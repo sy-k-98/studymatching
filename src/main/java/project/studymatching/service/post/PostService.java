@@ -1,12 +1,17 @@
 package project.studymatching.service.post;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import project.studymatching.dto.post.*;
+import project.studymatching.entity.category.Category;
+import project.studymatching.entity.member.Member;
 import project.studymatching.entity.post.Image;
 import project.studymatching.entity.post.Post;
+import project.studymatching.exception.CategoryNotFoundException;
+import project.studymatching.exception.MemberNotFoundException;
 import project.studymatching.exception.PostNotFoundException;
 import project.studymatching.repository.category.CategoryRepository;
 import project.studymatching.repository.member.MemberRepository;
@@ -15,6 +20,8 @@ import project.studymatching.service.file.FileService;
 
 import java.util.List;
 import java.util.stream.IntStream;
+
+import static java.util.stream.Collectors.toList;
 
 @Service
 @Transactional(readOnly = true)
@@ -28,12 +35,12 @@ public class PostService {
 
     @Transactional
     public PostCreateResponse create(PostCreateRequest req) {
+        Member member = memberRepository.findById(req.getMemberId()).orElseThrow(MemberNotFoundException::new);
+        Category category = categoryRepository.findById(req.getCategoryId()).orElseThrow(CategoryNotFoundException::new);
+        List<Image> images = req.getImages().stream().map(i -> new Image(i.getOriginalFilename())).collect(toList());
+
         Post post = postRepository.save(
-                PostCreateRequest.toEntity(
-                        req,
-                        memberRepository,
-                        categoryRepository
-                )
+                new Post(req.getTitle(), req.getContent(), member, category, images)
         );
         uploadImages(post.getImages(), req.getImages());
         return new PostCreateResponse(post.getId());
@@ -48,6 +55,7 @@ public class PostService {
     }
 
     @Transactional
+    @PreAuthorize("@postGuard.check(#id)")
     public void delete(Long id) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
         deleteImages(post.getImages());
@@ -59,6 +67,7 @@ public class PostService {
     }
 
     @Transactional
+    @PreAuthorize("@postGuard.check(#id)")
     public PostUpdateResponse update(Long id, PostUpdateRequest req) {
         Post post = postRepository.findById(id).orElseThrow(PostNotFoundException::new);
         Post.ImageUpdatedResult result = post.update(req);

@@ -23,6 +23,13 @@ import javax.validation.Valid;
 public class PostController {
     private final PostService postService;
 
+    @ApiOperation(value = "게시글 목록 조회", notes = "게시글 목록을 조회한다.")
+    @GetMapping("/api/posts")
+    @ResponseStatus(HttpStatus.OK)
+    public Response readAll(@Valid PostReadCondition cond) {
+        return Response.success(postService.readAll(cond));
+    }
+
     @ApiOperation(value = "게시글 생성", notes = "게시글을 생성한다.")
     @PostMapping("/api/posts")
     @ResponseStatus(HttpStatus.CREATED)
@@ -55,10 +62,4 @@ public class PostController {
         return Response.success(postService.update(id, req));
     }
 
-    @ApiOperation(value = "게시글 목록 조회", notes = "게시글 목록을 조회한다.")
-    @GetMapping("/api/posts")
-    @ResponseStatus(HttpStatus.OK)
-    public Response readAll(@Valid PostReadCondition cond) {
-        return Response.success(postService.readAll(cond));
-    }
 }

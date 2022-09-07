@@ -10,10 +10,14 @@ import project.studymatching.dto.sign.SignInRequest;
 import project.studymatching.dto.sign.SignInResponse;
 import project.studymatching.dto.sign.SignUpRequest;
 import project.studymatching.entity.member.Member;
+import project.studymatching.entity.member.Role;
 import project.studymatching.entity.member.RoleType;
 import project.studymatching.exception.*;
 import project.studymatching.repository.member.MemberRepository;
 import project.studymatching.repository.role.RoleRepository;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,32 +32,27 @@ public class SignService {
     @Transactional
     public void signUp(SignUpRequest req) {
         validateSignUpInfo(req);
-        memberRepository.save(SignUpRequest.toEntity(req,
-                roleRepository.findByRoleType(RoleType.ROLE_NORMAL).orElseThrow(RoleNotFoundException::new),
-                passwordEncoder));
+        String encodedPassword = passwordEncoder.encode(req.getPassword());
+        List<Role> roles = List.of(roleRepository.findByRoleType(RoleType.ROLE_NORMAL).orElseThrow(RoleNotFoundException::new));
+        memberRepository.save(
+                new Member(req.getEmail(), encodedPassword, req.getUsername(), req.getNickname(), roles)
+        );
     }
 
     @Transactional(readOnly = true)
     public SignInResponse signIn(SignInRequest req) {
-        Member member = memberRepository.findByEmail(req.getEmail()).orElseThrow(MemberNotFoundException::new);
+        Member member = memberRepository.findWithRolesByEmail(req.getEmail()).orElseThrow(LoginFailureException::new);
         validatePassword(req, member);
-        String subject = createSubject(member);
-        String accessToken = accessTokenHelper.createToken(subject);
-        String refreshToken = refreshTokenHelper.createToken(subject);
+        TokenHelper.PrivateClaims privateClaims = createPrivateClaims(member);
+        String accessToken = accessTokenHelper.createToken(privateClaims);
+        String refreshToken = refreshTokenHelper.createToken(privateClaims);
         return new SignInResponse(accessToken, refreshToken);
     }
 
     public RefreshTokenResponse refreshToken(String rToken) {
-        validateRefreshToken(rToken);
-        String subject = refreshTokenHelper.extractSubject(rToken);
-        String accessToken = accessTokenHelper.createToken(subject);
+        TokenHelper.PrivateClaims privateClaims = refreshTokenHelper.parse(rToken).orElseThrow(RefreshTokenFailureException::new);
+        String accessToken = accessTokenHelper.createToken(privateClaims);
         return new RefreshTokenResponse(accessToken);
-    }
-
-    private void validateRefreshToken(String rToken) {
-        if(!refreshTokenHelper.validate(rToken)) {
-            throw new AuthenticationEntryPointException();
-        }
     }
 
     private void validateSignUpInfo(SignUpRequest req) {
@@ -69,11 +68,15 @@ public class SignService {
         }
     }
 
-    private String createSubject(Member member) {
-        return String.valueOf(member.getId());
+    private TokenHelper.PrivateClaims createPrivateClaims(Member member) {
+        return new TokenHelper.PrivateClaims(
+                String.valueOf(member.getId()),
+                member.getRoles().stream()
+                        .map(memberRole -> memberRole.getRole())
+                        .map(role -> role.getRoleType())
+                        .map(roleType -> roleType.toString())
+                        .collect(Collectors.toList()));
     }
-
-
 
 
 }

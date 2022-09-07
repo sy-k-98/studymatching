@@ -3,6 +3,7 @@ package project.studymatching.config.security;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -12,19 +13,16 @@ import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import project.studymatching.config.token.TokenHelper;
-import project.studymatching.service.sign.TokenService;
 
 @EnableWebSecurity
 @RequiredArgsConstructor
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
-
-    private final TokenHelper accessTokenHelper;
     private final CustomUserDetailsService userDetailsService;
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().mvcMatchers("/exception/**",
-                "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**");
+        web.ignoring().mvcMatchers("/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**");
     }
 
     @Override
@@ -36,29 +34,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/api/sign-in", "/api/sign-up", "/api/refresh-token").permitAll()
-                    .antMatchers(HttpMethod.GET, "/api/**").permitAll()
-                    .antMatchers(HttpMethod.GET, "/image/**").permitAll()
-                    .antMatchers(HttpMethod.DELETE, "/api/members/{id}/**").access("@memberGuard.check(#id)")
-                    .antMatchers(HttpMethod.POST, "/api/posts").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/api/posts/{id}").access("@postGuard.check(#id)")
-                    .antMatchers(HttpMethod.DELETE, "/api/posts/{id}").access("@postGuard.check(#id)")
-                    .antMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.POST, "/api/comments").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/api/comments/{id}").access("@commentGuard.check(#id)")
-                    .anyRequest().hasAnyRole("ADMIN")
+                .antMatchers(HttpMethod.GET, "/image/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/sign-in", "/api/sign-up", "/api/refresh-token").permitAll()
+                .antMatchers(HttpMethod.DELETE, "/api/members/{id}/**").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/categories/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN")
+                .antMatchers(HttpMethod.POST, "/api/posts").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/posts/{id}").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/posts/{id}").authenticated()
+                .antMatchers(HttpMethod.POST, "/api/comments").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/comments/{id}").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/**").permitAll()
+                .anyRequest().hasAnyRole("ADMIN")
                 .and()
                 .exceptionHandling().accessDeniedHandler(new CustomAccessDeniedHandler())
                 .and()
                 .exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
                 .and()
-                .addFilterBefore(new JwtAuthenticationFilter(accessTokenHelper, userDetailsService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(new JwtAuthenticationFilter(userDetailsService), UsernamePasswordAuthenticationFilter.class);
     }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
-
 }

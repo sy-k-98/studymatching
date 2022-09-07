@@ -1,6 +1,7 @@
 package project.studymatching.service.member;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import project.studymatching.dto.member.MemberDto;
@@ -19,6 +20,7 @@ public class MemberService {
     }
 
     @Transactional
+    @PreAuthorize("@memberGuard.check(#id)")
     public void delete(Long id) {
         Member member = memberRepository.findById(id).orElseThrow(MemberNotFoundException::new);
         memberRepository.delete(member);

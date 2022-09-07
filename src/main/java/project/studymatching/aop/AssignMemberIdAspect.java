@@ -14,17 +14,14 @@ import java.util.Optional;
 
 @Aspect
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class AssignMemberIdAspect {
-
-    private final AuthHelper authHelper;
 
     @Before("@annotation(project.studymatching.aop.AssignMemberId)")
     public void assignMemberId(JoinPoint joinPoint) {
         Arrays.stream(joinPoint.getArgs())
                 .forEach(arg -> getMethod(arg.getClass(), "setMemberId")
-                        .ifPresent(setMemberId -> invokeMethod(arg, setMemberId, authHelper.extractMemberId())));
+                        .ifPresent(setMemberId -> invokeMethod(arg, setMemberId, AuthHelper.extractMemberId())));
     }
 
     private Optional<Method> getMethod(Class<?> clazz, String methodName) {
