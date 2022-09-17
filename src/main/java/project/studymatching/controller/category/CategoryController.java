@@ -19,10 +19,16 @@ public class CategoryController {
 
     private final CategoryService categoryService;
 
+    @GetMapping("/api/hello")
+    public String hello() {
+        return "안녕하세요 리액트와 스프링부트를 Proxy 설정을통해연결하고 있습니다";
+    }
+
     @ApiOperation(value = "모든 카테고리 조회", notes = "모든 카테고리를 조회한다.")
     @GetMapping("/api/categories")
     @ResponseStatus(HttpStatus.OK)
     public Response readAll() {
+
         return Response.success(categoryService.readAll());
     }
 
