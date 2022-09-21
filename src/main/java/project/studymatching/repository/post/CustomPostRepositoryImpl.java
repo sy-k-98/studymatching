@@ -20,6 +20,7 @@ import java.util.function.Function;
 import static com.querydsl.core.types.Projections.constructor;
 import static project.studymatching.entity.post.QPost.post;
 
+
 @Transactional(readOnly = true)
 public class CustomPostRepositoryImpl extends QuerydslRepositorySupport implements CustomPostRepository {
 

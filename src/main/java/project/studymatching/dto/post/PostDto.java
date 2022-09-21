@@ -17,6 +17,7 @@ public class PostDto {
     private Long id;
     private String title;
     private String content;
+    private String requirement;
     private MemberDto member;
     private List<ImageDto> images;
 
@@ -30,6 +31,7 @@ public class PostDto {
                 post.getId(),
                 post.getTitle(),
                 post.getContent(),
+                post.getRequirement(),
                 MemberDto.toDto(post.getMember()),
                 post.getImages().stream().map(i -> ImageDto.toDto(i)).collect(toList()),
                 post.getCreatedAt(),

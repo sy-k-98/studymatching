@@ -36,6 +36,10 @@ public class PostCreateRequest {
     @NotBlank(message = "{postCreateRequest.content.notBlank}")
     private String content;
 
+    @ApiModelProperty(value = "게시글 조건", notes = "게시글 조건을 입력해주세요", required = true, example = "my requirement")
+    @NotBlank(message = "{postCreateRequest.requirement.notBlank}")
+    private String requirement;
+
     @ApiModelProperty(hidden = true)
     @Null
     private Long memberId;

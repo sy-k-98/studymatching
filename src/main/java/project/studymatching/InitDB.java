@@ -78,14 +78,14 @@ public class InitDB {
     }
 
     private void initCategory() {
-        Category c1 = categoryRepository.save(new Category("category1", null));
-        Category c2 = categoryRepository.save(new Category("category2", c1));
-        Category c3 = categoryRepository.save(new Category("category3", c1));
-        Category c4 = categoryRepository.save(new Category("category4", c2));
-        Category c5 = categoryRepository.save(new Category("category5", c2));
-        Category c6 = categoryRepository.save(new Category("category6", c4));
-        Category c7 = categoryRepository.save(new Category("category7", c3));
-        Category c8 = categoryRepository.save(new Category("category8", null));
+        Category c1 = categoryRepository.save(new Category("어학", null));
+        Category c2 = categoryRepository.save(new Category("토익", c1));
+        Category c3 = categoryRepository.save(new Category("토익스피킹", c1));
+        Category c4 = categoryRepository.save(new Category("컴퓨터", null));
+        Category c5 = categoryRepository.save(new Category("백엔드", c4));
+        Category c6 = categoryRepository.save(new Category("프론트엔드", c4));
+        Category c7 = categoryRepository.save(new Category("기타", null));
+        Category c8 = categoryRepository.save(new Category("여행", c7));
 
     }
 
@@ -94,7 +94,7 @@ public class InitDB {
         Category category = categoryRepository.findAll().get(0);
         IntStream.range(0, 100)
                 .forEach(i -> postRepository.save(
-                        new Post("title" + i, "content" + i, member, category, List.of())
+                        new Post("title" + i, "content" + i, "requirement" + i, member, category, List.of())
                 ));
     }
 

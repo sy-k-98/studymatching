@@ -26,6 +26,10 @@ public class PostUpdateRequest {
     @NotBlank(message = "{postUpdateRequest.content.notBlank}")
     private String content;
 
+    @ApiModelProperty(value = "게시글 조건", notes = "게시글 조건을 입력해주세요", required = true, example = "my requirement")
+    @NotBlank(message = "{postUpdateRequest.requirement.notBlank}")
+    private String requirement;
+
     @ApiModelProperty(value = "추가된 이미지", notes = "추가된 이미지를 첨부해주세요.")
     private List<MultipartFile> addedImages = new ArrayList<>();
 

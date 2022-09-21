@@ -30,6 +30,8 @@ public class PostController {
         return Response.success(postService.readAll(cond));
     }
 
+
+
     @ApiOperation(value = "게시글 생성", notes = "게시글을 생성한다.")
     @PostMapping("/api/posts")
     @ResponseStatus(HttpStatus.CREATED)

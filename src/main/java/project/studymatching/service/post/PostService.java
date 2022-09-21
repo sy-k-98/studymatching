@@ -40,7 +40,7 @@ public class PostService {
         List<Image> images = req.getImages().stream().map(i -> new Image(i.getOriginalFilename())).collect(toList());
 
         Post post = postRepository.save(
-                new Post(req.getTitle(), req.getContent(), member, category, images)
+                new Post(req.getTitle(), req.getContent(), req.getRequirement(), member, category, images)
         );
         uploadImages(post.getImages(), req.getImages());
         return new PostCreateResponse(post.getId());

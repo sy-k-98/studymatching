@@ -36,6 +36,10 @@ public class Post extends EntityDate {
     @Lob
     private String content;
 
+    @Column(nullable = false)
+    @Lob
+    private String requirement;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -49,9 +53,10 @@ public class Post extends EntityDate {
     @OneToMany(mappedBy = "post", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Image> images;
 
-    public Post(String title, String content, Member member, Category category, List<Image> images) {
+    public Post(String title, String content, String requirement, Member member, Category category, List<Image> images) {
         this.title = title;
         this.content = content;
+        this.requirement = requirement;
         this.member = member;
         this.category = category;
         this.images = new ArrayList<>();
